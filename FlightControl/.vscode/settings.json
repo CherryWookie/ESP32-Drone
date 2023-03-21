@@ -1,0 +1,5 @@
+{
+    "cmake.configureOnOpen": true,
+    "idf.flashType": "UART",
+    "idf.port": "/dev/cu.usbserial-210"
+}
