@@ -43,6 +43,8 @@ remote control
 * [Quadcopter Physics and Control Software](https://andrew.gibiansky.com/blog/physics/quadcopter-dynamics/)
 * [Drone Mechanics Review](Resources/review-drones%20(1).pdf)
 * [Quadcopter Calculator](https://www.ecalc.ch/xcoptercalc.php)
+* [ESC Calibration Video (w/really funny voice inflections)](https://youtu.be/t-w5Oog8Jcg)
+* [ESC Calibration Library Github Link](https://github.com/lobodol/ESC-calibration)
 
 
 `Motor Bench Tests:`
@@ -62,6 +64,7 @@ In order to accurately estimate how much thrust our propellers and motors are ca
 * [`295mm Drone Frame (7inch Carbon Fiber)`](https://www.amazon.com/dp/B086X2JZD6/ref=sspa_dk_detail_1?psc=1&pd_rd_i=B086X2JZD6&pd_rd_w=WCDXi&content-id=amzn1.sym.dd2c6db7-6626-466d-bf04-9570e69a7df0&pf_rd_p=dd2c6db7-6626-466d-bf04-9570e69a7df0&pf_rd_r=J0KNY7VF83TW2ERNHBJ2&pd_rd_wg=QHlVM&pd_rd_r=0c775401-ea1b-4a0c-b214-b0ee40c58d4a&s=toys-and-games&sp_csd=d2lkZ2V0TmFtZT1zcF9kZXRhaWxfdGhlbWF0aWM&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUExMUUxVjBDT1VUMUQ2JmVuY3J5cHRlZElkPUEwNzk4MTg1MUw0UFRLT0lKMVhDMSZlbmNyeXB0ZWRBZElkPUEwNjY2MjQwMUpNTklOWE8xSFY2WSZ3aWRnZXROYW1lPXNwX2RldGFpbF90aGVtYXRpYyZhY3Rpb249Y2xpY2tSZWRpcmVjdCZkb05vdExvZ0NsaWNrPXRydWU=)
 
 * [`Motors`](https://www.amazon.com/iFlight-2450KV-Brushless-Racing-Quadcopter/dp/B096RTCGDT/ref=sr_1_2_sspa?crid=186K7HOMICKND&keywords=fpv+drone+motors+2306&qid=1675195938&sprefix=fpv+drone+motors+2306%2Caps%2C211&sr=8-2-spons&ufe=app_do%3Aamzn1.fos.006c50ae-5d4c-4777-9bc0-4513d670b6bc&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUExUkZQWjgwTlJNOFpGJmVuY3J5cHRlZElkPUEwODEzNDE4MlVaRUJKS0UwV1pJTCZlbmNyeXB0ZWRBZElkPUEwMDc5NDgxMUYxQkdFR1IxRVRXNiZ3aWRnZXROYW1lPXNwX2F0ZiZhY3Rpb249Y2xpY2tSZWRpcmVjdCZkb05vdExvZ0NsaWNrPXRydWU=)
+    * <https://shop.iflight-rc.com/XING-E-Pro-2306-4S-6S-FPV-Motor-pro1565>
 
 * [`4 in 1 ESC`](https://www.amazon.com/dp/B09SNWZRDG/ref=sspa_dk_detail_0?psc=1&pd_rd_i=B09SNWZRDG&pd_rd_w=Mll1v&content-id=amzn1.sym.bff6e147-54ad-4be3-b4ea-ec19ea6167f7&pf_rd_p=bff6e147-54ad-4be3-b4ea-ec19ea6167f7&pf_rd_r=2F9ZJ0W92CTRR8411K03&pd_rd_wg=JeM0S&pd_rd_r=8f039164-7b73-4ce9-93e9-99d09ca311aa&s=electronics&sp_csd=d2lkZ2V0TmFtZT1zcF9kZXRhaWwy&smid=A2J1A69ATLC913&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUEzVVdDVjFVVjE0UFZDJmVuY3J5cHRlZElkPUEwNTExNjE5MjU1SFlCUUUzUUhVVyZlbmNyeXB0ZWRBZElkPUEwNDEzNTA0MjRPU09XOVZGQTA1OCZ3aWRnZXROYW1lPXNwX2RldGFpbDImYWN0aW9uPWNsaWNrUmVkaXJlY3QmZG9Ob3RMb2dDbGljaz10cnVl)
 
@@ -79,20 +82,31 @@ In order to accurately estimate how much thrust our propellers and motors are ca
 
 ## Calculations
 
-## Installing Libraries
+## Installing Libraries (Ben you can do this thanks bb)
+
+Smart things etc...
 
 ## ESC Calibration
 
-Using the ESC-Calibration.ion from lobodo (Github) we were able to calibrate the esc by finding max and min throttle and then running the test function that starts at minimum throttle and goes to max. We ended up using an Arduino UNO to perform the calibration as the library wasn't working with the ESP32 and kept giving an error of 'Timed out waiting for packet header'. We tried it in arduino IDE along with VSCode and none worked with the ESP32. We anticipate that the library wasn't friendly with the model of ESP32? Not sure
+Using the [ESC-Calibration.io](https://github.com/lobodol/ESC-calibration) from lobodo we were able to calibrate the esc by finding max and min throttle and then running the test function that starts at minimum throttle and goes to max. We ended up using an Arduino UNO to perform the calibration as the library wasn't working with the ESP32 and kept giving an error of 'Timed out waiting for packet header'. We tried it in arduino IDE along with VSCode and none worked with the ESP32. We anticipate that the library wasn't friendly with the model of ESP32? Not sure
 
-Testing resulted in awesome things
+As we were testing the motors with the Arduino, we were able to calibrate them individually without a problem; however, when we started to test all four of them at once, at least one motor remained motionless. To remedy this, we switched back over to the ESP32 board and used the following code to test our motors with through VScode and all four worked simultaneously without a problem
+
+```C++
+ESC VScode code
+```
 
 ## Construction
 
+### Buck Converter
+
+We tested the converter first and tuned it to approximately 5.41 V output using the onboard potentiometer. 
+
 ## Troubleshooting
 
-This is troubleshootinadfasdffsfadfg......
-
-change
 
 ## PID
+
+```C++
+PID CODE
+```
