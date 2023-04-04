@@ -87,22 +87,44 @@ In order to accurately estimate how much thrust our propellers and motors are ca
 Smart things etc...
 
 ## ESC Calibration
+To calibrate our 4 in 1 ESC, we used the following procedure:
 
-Using the [ESC-Calibration.io](https://github.com/lobodol/ESC-calibration) from lobodo we were able to calibrate the esc by finding max and min throttle and then running the test function that starts at minimum throttle and goes to max. We ended up using an Arduino UNO to perform the calibration as the library wasn't working with the ESP32 and kept giving an error of 'Timed out waiting for packet header'. We tried it in arduino IDE along with VSCode and none worked with the ESP32. We anticipate that the library wasn't friendly with the model of ESP32? Not sure
+*(Note:Steps may vary depending on ESC Model.)*
 
-As we were testing the motors with the Arduino, we were able to calibrate them individually without a problem; however, when we started to test all four of them at once, at least one motor remained motionless. To remedy this, we switched back over to the ESP32 board and used the following code to test our motors with through VScode and all four worked simultaneously without a problem
+<Font Size= 4>`Steps:`</Font>
+
+1. Power ESP ONLY while sending 2000 PWM (Max throttle)
+2. Plug in the battery/power on the ESC. A series of beeps should ensue.
+3. While the ESC is still plugged in, send 1000 PWM (Min throttle). Another different series of beeps should follow.
+4. Unplug battery from ESC. Calibration should be complete.
+
+NOTE: After calibration is completed successfully, the power up should result in only one sycronized 3 beep series instead of a series of different beeps. The different beep patterns can be deciphered in your specific ESC manual; however, for our purposes, we used a third party ESC to decipher our beeps and found them to be quite similar.
 
 ```C++
 ESC VScode code
 ```
 
+<details open>
+<summary>Failed Attempts</summary>
+<br>
+Using the [ESC-Calibration.io](https://github.com/lobodol/ESC-calibration) from lobodo we were able to calibrate the esc by finding max and min throttle and then running the test function that starts at minimum throttle and goes to max. We ended up using an Arduino UNO to perform the calibration as the library wasn't working with the ESP32 and kept giving an error of 'Timed out waiting for packet header'. We tried it in arduino IDE along with VSCode and none worked with the ESP32. We anticipate that the library wasn't friendly with the model of ESP32? Not sure
+
+As we were testing the motors with the Arduino, we were able to calibrate them individually without a problem; however, when we started to test all four of them at once, at least one motor remained motionless. To remedy this, we switched back over to the ESP32 board and used the following code to test our motors with through VScode and all four worked simultaneously without a problem
+
+</details>
+
+#
+
 ## Construction
-
-### Buck Converter
-
+### `Frame`
+For the frame construction, we followed the inluded instructions. The ESC
+### `Buck Converter`
 We tested the converter first and tuned it to approximately 5.41 V output using the onboard potentiometer. 
 
 ## Troubleshooting
+
+
+This is
 
 
 ## PID
