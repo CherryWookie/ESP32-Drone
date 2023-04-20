@@ -104,7 +104,7 @@ NOTE: After calibration is completed successfully, the power up should result in
 ESC VScode code
 ```
 
-<details open>
+<details>
 <summary>Failed Attempts</summary>
 <br>
 Using the [ESC-Calibration.io](https://github.com/lobodol/ESC-calibration) from lobodo we were able to calibrate the esc by finding max and min throttle and then running the test function that starts at minimum throttle and goes to max. We ended up using an Arduino UNO to perform the calibration as the library wasn't working with the ESP32 and kept giving an error of 'Timed out waiting for packet header'. We tried it in arduino IDE along with VSCode and none worked with the ESP32. We anticipate that the library wasn't friendly with the model of ESP32? Not sure
@@ -116,18 +116,38 @@ As we were testing the motors with the Arduino, we were able to calibrate them i
 #
 
 ## Construction
-### `Frame`
-For the frame construction, we followed the inluded instructions. The ESC
+### `Frame/General`
+For the frame construction, we followed the inluded instructions. The ESC was simply put on with the included screws, shock absorbers, and nuts. 
+
+### Soldering/ESC
+Soldering the wires onto the ESC was unnecessarily difficult. What ended up working the best was to hold the iron at an angle so that as much of the iron as possible was in contact with the ESC metal contacts. Adding solder to the contacts prior to placing the wire worked well also. Holding the wire down with the iron while resting it in position on top of the contacts and adding solder eventually was the best method. Remember to be aware of any stray solder connecting any of the chips on the ESC.
+
+Keep in mind that the ESC will get very hot during this process so make sure to let the chip cool down in between solders to avoid burning the chip. 
+
+With the motor leads coming off of the ESC, we initially tried soldering the wires to the pins on top of the ESC but quickly realized that it wasn't viable as the pins weren't holding solder very well. We ended up splicing wires to the short small Molex connector that was included with the ESC. 
+
 ### `Buck Converter`
 We tested the converter first and tuned it to approximately 5.41 V output using the onboard potentiometer. 
 
+### `ESP32`
+We opted to use a prototype PCB board to run our wiring through. We soldered the ESP into the PCB and ran wiring underneath in order to connect to the wires coming out of the ESC to the back of the drone.
+
+### `MPU 6050 Gyro Module`
+For this sensor, we had slight issues with the unit overshooting the actual degree of inclination and slowly coming back down to the expected value. This is most likely due to the Kalman filter library that we used. It didn't seem to be giving us a lot of problems besides an occasional overshoot within the range of motion that we were expecting so we opted to use it for the time being.
+
+Another thing we had to account for was our position. We oriented our MPU unit with the `x axis` facing down, the `y axis` pointing backwards, and the `z axis` pointing to the left of the drone. Because of this, we had to add some 90 degree manual offsets to the readings.
+
 ## Troubleshooting
 
-
+Done let ben wire the esp
 This is
 
 
 ## PID
+
+For the PID integration, we initially came up with a system to average the different telemetry conditions in order to send our motos cohesive and accurate values. This involved having a motor PWM value for each individual motor for `Pitch` as well as `Roll`. From this, would have 2 PWM values for each motor. Our solution to end up with one single PWM value per motor was to average these values together. *(e.g. (M1roll + M1pitch)/2 etc...)* 
+
+With these values, we could utilize our accelerometer/gyroscope data and send these values accordingly to our motors in hopes to self stabalize.
 
 ```C++
 PID CODE
