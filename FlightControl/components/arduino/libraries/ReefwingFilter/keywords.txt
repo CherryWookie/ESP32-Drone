@@ -1,0 +1,32 @@
+#######################################
+# IDE Map for Reefwing Filter
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+SMA KEYWORD1
+EMA KEYWORD1
+ReefwingFilter KEYWORD1
+ComplementaryFilter KEYWORD1
+SimpleKalmanFilter	KEYWORD1
+NoiseGenerator  KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+result  KEYWORD2
+setValues   KEYWORD2
+updateEstimate	KEYWORD2
+setMeasurementError	KEYWORD2
+setEstimateError	KEYWORD2
+setProcessNoise	KEYWORD2
+getKalmanGain	KEYWORD2
+oneBitLFSR  KEYWORD2
+randomWithRange KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################

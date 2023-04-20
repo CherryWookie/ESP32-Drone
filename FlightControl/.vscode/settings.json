@@ -1,5 +1,6 @@
 {
     "cmake.configureOnOpen": true,
     "idf.flashType": "UART",
-    "idf.port": "/dev/cu.usbserial-210"
+    "idf.port": "/dev/cu.usbserial-210",
+    "idf.adapterTargetName": "esp32"
 }

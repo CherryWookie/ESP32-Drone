@@ -3,18 +3,59 @@
 #error "Must only be compiled when using Bluepad32 Arduino platform"
 #endif  // !CONFIG_BLUEPAD32_PLATFORM_ARDUINO
 
+
 #include <Arduino.h>
 #include <Bluepad32.h>
 #include <MBL_Quadcopter.h>
+#include <Adafruit_MPU6050.h>
+#include <Kalman.h>
+#include <PID_v1.h>
+#include <WiFi.h>
+#include <AsyncUDP.h>
+#include <mutex>
+#include <sstream>
+#include "wifi_access.h"
 
+// TaskHandle_t WiFiAccess;
 ControllerPtr myControllers[BP32_MAX_CONTROLLERS];
+Adafruit_MPU6050 mpu;
 
-Quadcopter drone(26, 27, 14, 12, 0);
-//FL M4 Pin26
-//FR M2 Pin27
-//RL M3 Pin14
-//RR M1 Pin12
+// wifi settings
+const char* ssid = "esp32drone";
+const char* password = "123456";
+constexpr int port = 1234;
+
 int speed = 1000;
+int prev_speed = speed;
+
+Kalman Kx;
+Kalman Ky;
+Kalman Kz;
+
+// global vars to be mutexed
+double Kp = 50.0;
+double Ki = 1.2;
+double Kd = 0.05;
+
+double roll = 0;
+double pitch = 0;
+double yaw = 0;
+// -------------------------
+
+Quadcopter drone(26, 27, 14, 12, Kp, Ki, Kd);
+// FL M4 Pin26
+// FR M2 Pin27
+// RL M3 Pin14
+// RR M1 Pin12
+
+unsigned long timer = micros();
+double dt = 0;
+
+// MPU Offsets
+const double xAccelOffset = -9.8;
+const double yAccelOffset = 0;
+const double zAccelOffset = 9.8;
+
 
 void onConnectedController(ControllerPtr ctl) {
     bool foundEmptySlot = false;
@@ -38,6 +79,7 @@ void onConnectedController(ControllerPtr ctl) {
 
 void onDisconnectedController(ControllerPtr ctl) {
     bool foundController = false;
+    speed = 1000;
 
     for (int i = 0; i < BP32_MAX_CONTROLLERS; i++) {
         if (myControllers[i] == ctl) {
@@ -54,40 +96,20 @@ void onDisconnectedController(ControllerPtr ctl) {
 }
 
 void processGamepad(ControllerPtr gamepad) {
-    // There are different ways to query whether a button is pressed.
-    // By query each button individually:
-    //  a(), b(), x(), y(), l1(), etc...
-
     if (gamepad->a()) {
-        // gamepad->setPlayerLEDs(0x07);//3
-        // drone.calibrate(2);
-        // drone.calibrate(1);
         speed = 1000;
-        // drone.test(1000);
     }
 
     if (gamepad->b()) {
-        // gamepad->setPlayerLEDs(0x03);//2
-        // drone.calibrate(1);
-        // drone.calibrate(2);
+
     }
 
     if (gamepad->x()) {
-        // gamepad->setPlayerLEDs(0x01); // 1
-        // Duration: 255 is ~2 seconds
-        // force: intensity
-        // Some gamepads like DS3, DS4, DualSense, Switch, Xbox One S support
-        // rumble.
-        // It is possible to set it by calling:
-        // gamepad->setRumble(0xc0 /* force */, 0x10 /* duration */);
-        // delay(10);
-        // drone.calibrate(0);
+        
     }
     if (gamepad->y()) {
-        // gamepad->setPlayerLEDs(0xf);//4
-        // drone.test(2000);
+        
         speed = 2000;
-        // drone.calibrate(0);
     }
     int y = gamepad->axisY();
     y = -y;
@@ -99,49 +121,72 @@ void processGamepad(ControllerPtr gamepad) {
             speed -= 1;
         }
         
-        // drone.test(speed);
     }
-    
-    
-
-    // Another way to query the buttons, is by calling buttons(), or
-    // miscButtons() which return a bitmask.
-    // Some gamepads also have DPAD, axis and more.
-    // Console.printf(
-    //     "idx=%d, dpad: 0x%02x, buttons: 0x%04x, axis L: %4d, %4d, axis R: %4d, "
-    //     "%4d, brake: %4d, throttle: %4d, misc: 0x%02x, battery=%d\n",
-    //     gamepad->index(),        // Controller Index
-    //     gamepad->dpad(),         // DPAD
-    //     gamepad->buttons(),      // bitmask of pressed buttons
-    //     gamepad->axisX(),        // (-511 - 512) left X Axis
-    //     gamepad->axisY(),        // (-511 - 512) left Y axis
-    //     gamepad->axisRX(),       // (-511 - 512) right X axis
-    //     gamepad->axisRY(),       // (-511 - 512) right Y axis
-    //     gamepad->brake(),        // (0 - 1023): brake button
-    //     gamepad->throttle(),     // (0 - 1023): throttle (AKA gas) button
-    //     gamepad->miscButtons(),  // bitmak of pressed "misc" buttons
-    //     gamepad->battery()       // 0=Unk, 1=Empty, 255=full
-    // );
-    // You can query the axis and other properties as well. See ArduinoController.h
-    // For all the available functions.
 }
 
+// void WiFiAccessLoop(void * pvParameters) {
+//   for(;;) {
+//     // do wifi stuff
+    
+//   }
+// }
+
 // Arduino setup function. Runs in CPU 1
-
-
 void setup() {
     Console.printf("Firmware: %s\n", BP32.firmwareVersion());
-
+    // drone.test(1000);
+    drone.test(1000);
+    
+    Kx.setAngle(0);
+    Ky.setAngle(0);
+    Kz.setAngle(0);
+   
+    // xTaskCreatePinnedToCore(
+    //          WiFiAccessLoop, /* Task function. */
+    //          "WiFiAccess",   /* name of task. */
+    //          10000,     /* Stack size of task */
+    //          NULL,      /* parameter of the task */
+    //          1,         /* priority of the task */
+    //          &WiFiAccess,    /* Task handle to keep track of created task */
+    //          0); 
+    
     // Setup the Bluepad32 callbacks
     BP32.setup(&onConnectedController, &onDisconnectedController);
-    BP32.forgetBluetoothKeys();
+    while (!mpu.begin()) {
+        Console.println("Failed to find MPU6050 chip");
+        delay(50);
+    }
+    Console.println("MPU6050 Found!");
+    mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
+    mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+    mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
+    
+    // BP32.forgetBluetoothKeys();
+    // WiFi.mode(WIFI_STA);
+    // WiFi.begin(ssid, password);
+    // if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    //     Console.println("WiFi Failed");
+    // while (1) {
+    //     delay(1000);
+    // }
+    // }
+    // if (udp.listen(port)) {
+    //     Console.print("UDP Listening on IP: ");
+    //     Console.println(WiFi.localIP().toString());
+    //     Console.print(":");
+    //     Console.printf("%n", port);
+    //     udp.onPacket(handle_packet);
+    // }
 
-
+    delay(500);
 }
 
 // Arduino loop function. Runs in CPU 1
 void loop() {
     BP32.update();
+
+    dt = (double)(micros() - timer) / 1000000; // Calculate delta time
+    timer = micros();
 
     // It is safe to always do this before using the controller API.
     // This guarantees that the controller is valid and connected.
@@ -152,13 +197,48 @@ void loop() {
             if (myController->isGamepad()) {
                 processGamepad(myController);
                 speed = constrain(speed, 1000, 2000);
-                Console.printf("PWM = %d\n", speed);
-                drone.test(speed);
+                if (speed != prev_speed) {
+                    // drone.test(speed);
+                    // Console.printf("PWM = %d\n", speed);
+                }
             }
         }
     }
+    prev_speed = speed;
 
+    sensors_event_t a, g, temp;
+    mpu.getEvent(&a, &g, &temp);
+
+    // a.acceleration.x += xAccelOffset;
+    // a.acceleration.y += yAccelOffset;
+    // a.acceleration.z += zAccelOffset;
+
+    double roll_init = atan2(-a.acceleration.x, a.acceleration.z) * RAD_TO_DEG;
+    double pitch_init = atan2(-a.acceleration.x, a.acceleration.y) * RAD_TO_DEG;
+    // double yaw_init = atan2(a.acceleration.z, a.acceleration.y) * RAD_TO_DEG;
+    double gyroX = g.gyro.x / 131.0;
+    double gyroY = g.gyro.y / 131.0;
+    double gyroZ = g.gyro.z / 131.0;
+
+    drone.roll = Ky.getAngle(roll_init - 79.02, gyroY, dt);
+    drone.pitch = Kz.getAngle(pitch_init - 90.35, gyroZ / 131.0, dt);
+    // drone.yaw = Kx.getAngle(yaw_init, gyroX / 131.0, dt);
+
+    roll = drone.roll;
+    pitch = drone.pitch;
+    // yaw = drone.yaw;
+
+    drone.balance();
     
+    Console.print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    Console.printf("%f, %f\n", drone.roll, drone.pitch);
+    Console.printf("%d, %d, %d, %d\n", drone.FL_pwm, drone.FR_pwm, drone.RL_pwm, drone.RR_pwm);
+    // Console.printf("dt: %f\nx: %f\ny: %f\nz: %f\n", dt, yaw, roll, pitch);
+    // Console.printf("roll: %f\n", drone.roll);
+
+    // Console.printf("gyroZrate: %f\n", g.gyro.z);
+    // Console.printf("\n\nAcceleration\n-----------\nx: %f\ny: %f\nz: %f\nGyroscope\n-----------\nx: %f\ny: %f\nz: %f\n", a.acceleration.x, a.acceleration.y, a.acceleration.z, g.gyro.x * RAD_TO_DEG, g.gyro.y * RAD_TO_DEG, g.gyro.z * RAD_TO_DEG);
+        
 
     // The main loop must have some kind of "yield to lower priority task" event.
     // Otherwise the watchdog will get triggered.
@@ -167,5 +247,7 @@ void loop() {
     // https://stackoverflow.com/questions/66278271/task-watchdog-got-triggered-the-tasks-did-not-reset-the-watchdog-in-time
 
     // vTaskDelay(1);
-    delay(10);
+    // delay(200);
+    // broadcast_parameters();
+    delay(100);
 }
