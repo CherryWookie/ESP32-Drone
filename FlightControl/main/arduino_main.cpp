@@ -15,34 +15,33 @@
 #include <mutex>
 #include <sstream>
 #include "wifi_access.h"
+#include "bluetooth_access.h"
+#include "data.h"
 
 // TaskHandle_t WiFiAccess;
-ControllerPtr myControllers[BP32_MAX_CONTROLLERS];
+
 Adafruit_MPU6050 mpu;
 
 // wifi settings
 const char* ssid = "esp32drone";
-const char* password = "123456";
+const char* password = "";
 constexpr int port = 1234;
 
 int speed = 1000;
 int prev_speed = speed;
+int counter = 0;
 
 Kalman Kx;
 Kalman Ky;
 Kalman Kz;
 
 // global vars to be mutexed
-double Kp = 50.0;
-double Ki = 1.2;
-double Kd = 0.05;
+// Data data;
 
-double roll = 0;
-double pitch = 0;
-double yaw = 0;
 // -------------------------
 
-Quadcopter drone(26, 27, 14, 12, Kp, Ki, Kd);
+// Quadcopter drone(26, 27, 14, 12, Kp, Ki, Kd);
+Quadcopter drone(19, 18, 5, 17, data.Kp, data.Ki, data.Kd);
 // FL M4 Pin26
 // FR M2 Pin27
 // RL M3 Pin14
@@ -57,43 +56,43 @@ const double yAccelOffset = 0;
 const double zAccelOffset = 9.8;
 
 
-void onConnectedController(ControllerPtr ctl) {
-    bool foundEmptySlot = false;
-    for (int i = 0; i < BP32_MAX_CONTROLLERS; i++) {
-        if (myControllers[i] == nullptr) {
-            Console.printf("CALLBACK: Controller is connected, index=%d\n", i);
-            // Additionally, you can get certain gamepad properties like:
-            // Model, VID, PID, BTAddr, flags, etc.
-            ControllerProperties properties = ctl->getProperties();
-            Console.printf("Controller model: %s, VID=0x%04x, PID=0x%04x\n", ctl->getModelName(), properties.vendor_id,
-                           properties.product_id);
-            myControllers[i] = ctl;
-            foundEmptySlot = true;
-            break;
-        }
-    }
-    if (!foundEmptySlot) {
-        Console.println("CALLBACK: Controller connected, but could not found empty slot");
-    }
-}
+// void onConnectedController(ControllerPtr ctl) {
+//     bool foundEmptySlot = false;
+//     for (int i = 0; i < BP32_MAX_CONTROLLERS; i++) {
+//         if (myControllers[i] == nullptr) {
+//             Console.printf("CALLBACK: Controller is connected, index=%d\n", i);
+//             // Additionally, you can get certain gamepad properties like:
+//             // Model, VID, PID, BTAddr, flags, etc.
+//             ControllerProperties properties = ctl->getProperties();
+//             Console.printf("Controller model: %s, VID=0x%04x, PID=0x%04x\n", ctl->getModelName(), properties.vendor_id,
+//                            properties.product_id);
+//             myControllers[i] = ctl;
+//             foundEmptySlot = true;
+//             break;
+//         }
+//     }
+//     if (!foundEmptySlot) {
+//         Console.println("CALLBACK: Controller connected, but could not found empty slot");
+//     }
+// }
 
-void onDisconnectedController(ControllerPtr ctl) {
-    bool foundController = false;
-    speed = 1000;
+// void onDisconnectedController(ControllerPtr ctl) {
+//     bool foundController = false;
+//     speed = 1000;
 
-    for (int i = 0; i < BP32_MAX_CONTROLLERS; i++) {
-        if (myControllers[i] == ctl) {
-            Console.printf("CALLBACK: Controller is disconnected from index=%d\n", i);
-            myControllers[i] = nullptr;
-            foundController = true;
-            break;
-        }
-    }
+//     for (int i = 0; i < BP32_MAX_CONTROLLERS; i++) {
+//         if (myControllers[i] == ctl) {
+//             Console.printf("CALLBACK: Controller is disconnected from index=%d\n", i);
+//             myControllers[i] = nullptr;
+//             foundController = true;
+//             break;
+//         }
+//     }
 
-    if (!foundController) {
-        Console.println("CALLBACK: Controller disconnected, but not found in myControllers");
-    }
-}
+//     if (!foundController) {
+//         Console.println("CALLBACK: Controller disconnected, but not found in myControllers");
+//     }
+// }
 
 void processGamepad(ControllerPtr gamepad) {
     if (gamepad->a()) {
@@ -133,9 +132,10 @@ void processGamepad(ControllerPtr gamepad) {
 
 // Arduino setup function. Runs in CPU 1
 void setup() {
-    Console.printf("Firmware: %s\n", BP32.firmwareVersion());
+    // Console.printf("Firmware: %s\n", BP32.firmwareVersion());
     // drone.test(1000);
     drone.test(1000);
+    // Console.begin();
     
     Kx.setAngle(0);
     Ky.setAngle(0);
@@ -150,40 +150,72 @@ void setup() {
     //          &WiFiAccess,    /* Task handle to keep track of created task */
     //          0); 
     
+    // Setup WiFi
+    WiFi.softAPdisconnect();
+    WiFi.mode(WIFI_AP);
+    if (!WiFi.softAP(ssid, NULL)) {
+        Console.print("Waiting for WiFi Connection ...");
+        while (1) {
+            Console.print(".");
+            delay(1000);
+        }
+        Console.print("\n");
+    }
+    Console.println("WiFi Connected.");
+    delay(500);
+    IPAddress Ip(192, 168, 4, 22);
+    IPAddress NMask(255, 255, 255, 0);
+    if (!WiFi.softAPConfig(Ip, Ip, NMask)) {
+        Console.print("Configuring SoftAP ...");
+        while (1) {
+            Console.print(".");
+            delay(1000);
+        }
+        Console.print("\n");
+    }
+    Console.print("WiFi Configured at IP: ");
+    IPAddress myIP = WiFi.softAPIP();
+    Console.println(myIP.toString());    
+    
+    
+    if (udp.listen(1234)) {
+        Console.print("UDP Listening on IP: ");
+        Console.print(myIP.toString());
+        Console.printf(" | %d", port);
+        Console.println("");
+        udp.onPacket(handle_packet);
+    }
+    else {
+        Console.println("Error: UDP not connected properly");
+    }
+    // Console.println("");
     // Setup the Bluepad32 callbacks
     BP32.setup(&onConnectedController, &onDisconnectedController);
-    while (!mpu.begin()) {
-        Console.println("Failed to find MPU6050 chip");
-        delay(50);
-    }
-    Console.println("MPU6050 Found!");
-    mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
-    mpu.setGyroRange(MPU6050_RANGE_500_DEG);
-    mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
+
+    // Setup MPU6050
+    // while (!mpu.begin()) {
+    //     Console.println("Failed to find MPU6050 chip");
+    //     delay(50);
+    // }
+    // Console.println("MPU6050 Found!");
+    // mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
+    // mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+    // mpu.setFilterBandwidth(MPU6050_BAND_5_HZ);
     
+
+
     // BP32.forgetBluetoothKeys();
-    // WiFi.mode(WIFI_STA);
-    // WiFi.begin(ssid, password);
-    // if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    //     Console.println("WiFi Failed");
-    // while (1) {
-    //     delay(1000);
-    // }
-    // }
-    // if (udp.listen(port)) {
-    //     Console.print("UDP Listening on IP: ");
-    //     Console.println(WiFi.localIP().toString());
-    //     Console.print(":");
-    //     Console.printf("%n", port);
-    //     udp.onPacket(handle_packet);
-    // }
+    
 
     delay(500);
 }
 
 // Arduino loop function. Runs in CPU 1
 void loop() {
+    // WiFiClient client = server.available();
     BP32.update();
+
+    
 
     dt = (double)(micros() - timer) / 1000000; // Calculate delta time
     timer = micros();
@@ -206,33 +238,33 @@ void loop() {
     }
     prev_speed = speed;
 
-    sensors_event_t a, g, temp;
-    mpu.getEvent(&a, &g, &temp);
+    // sensors_event_t a, g, temp;
+    // mpu.getEvent(&a, &g, &temp);
 
-    // a.acceleration.x += xAccelOffset;
-    // a.acceleration.y += yAccelOffset;
-    // a.acceleration.z += zAccelOffset;
+    // // a.acceleration.x += xAccelOffset;
+    // // a.acceleration.y += yAccelOffset;
+    // // a.acceleration.z += zAccelOffset;
 
-    double roll_init = atan2(-a.acceleration.x, a.acceleration.z) * RAD_TO_DEG;
-    double pitch_init = atan2(-a.acceleration.x, a.acceleration.y) * RAD_TO_DEG;
-    // double yaw_init = atan2(a.acceleration.z, a.acceleration.y) * RAD_TO_DEG;
-    double gyroX = g.gyro.x / 131.0;
-    double gyroY = g.gyro.y / 131.0;
-    double gyroZ = g.gyro.z / 131.0;
+    // double roll_init = atan2(-a.acceleration.x, a.acceleration.z) * RAD_TO_DEG;
+    // double pitch_init = atan2(-a.acceleration.x, a.acceleration.y) * RAD_TO_DEG;
+    // // double yaw_init = atan2(a.acceleration.z, a.acceleration.y) * RAD_TO_DEG;
+    // double gyroX = g.gyro.x / 131.0;
+    // double gyroY = g.gyro.y / 131.0;
+    // double gyroZ = g.gyro.z / 131.0;
 
-    drone.roll = Ky.getAngle(roll_init - 79.02, gyroY, dt);
-    drone.pitch = Kz.getAngle(pitch_init - 90.35, gyroZ / 131.0, dt);
+    // drone.roll = Ky.getAngle(roll_init - 79.02, gyroY, dt);
+    // drone.pitch = Kz.getAngle(pitch_init - 90.35, gyroZ / 131.0, dt);
     // drone.yaw = Kx.getAngle(yaw_init, gyroX / 131.0, dt);
 
-    roll = drone.roll;
-    pitch = drone.pitch;
-    // yaw = drone.yaw;
+    // roll = drone.roll;
+    // pitch = drone.pitch;
+    // // yaw = drone.yaw;
 
-    drone.balance();
+    // drone.balance();
     
-    Console.print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    Console.printf("%f, %f\n", drone.roll, drone.pitch);
-    Console.printf("%d, %d, %d, %d\n", drone.FL_pwm, drone.FR_pwm, drone.RL_pwm, drone.RR_pwm);
+    // Console.print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    // Console.printf("%f, %f\n", drone.roll, drone.pitch);
+    // Console.printf("%d, %d, %d, %d\n", drone.FL_pwm, drone.FR_pwm, drone.RL_pwm, drone.RR_pwm);
     // Console.printf("dt: %f\nx: %f\ny: %f\nz: %f\n", dt, yaw, roll, pitch);
     // Console.printf("roll: %f\n", drone.roll);
 
@@ -249,5 +281,17 @@ void loop() {
     // vTaskDelay(1);
     // delay(200);
     // broadcast_parameters();
-    delay(100);
+
+    if (!controller_connected) {
+        speed = 1000;
+    }
+    std::stringstream ss;
+    // ss << "T " << drone.roll << ' ' << drone.pitch << ' ' << drone.FL_pwm << ' ' << drone.FR_pwm << ' ' << drone.RL_pwm << ' ' << drone.RR_pwm;
+    ss << "T 20.2 12.01 1200 1302 1109 1312";
+    udp.broadcast(ss.str().c_str());
+    // Console.println("Listening...\n");
+    
+    delay(1000);
 }
+
+
