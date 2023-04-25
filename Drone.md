@@ -83,6 +83,11 @@ In order to accurately estimate how much thrust our propellers and motors are ca
 ## Calculations
 
 ## Installing Libraries (Ben you can do this thanks bb)
+1. Install ESP-IDF v4.4 and dependencies found [HERE]([https://link-url-here.org](https://docs.espressif.com/projects/esp-idf/en/v4.4.4/esp32/get-started/index.html)).
+2. Install Espressif IDF VSCode extension.
+3. In VSCode, open command palette and choose ESP-IDF: Configure ESP-IDF Extension.
+4. Select 'Use Existing Setup'.
+5. Clone this repository into a new folder using `git clone https://github.com/CherryWookie/ESP32-Drone`
 
 Smart things etc...
 
