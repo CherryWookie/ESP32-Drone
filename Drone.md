@@ -86,10 +86,15 @@ In order to accurately estimate how much thrust our propellers and motors are ca
 1. Install ESP-IDF v4.4 and dependencies found [HERE](https://docs.espressif.com/projects/esp-idf/en/v4.4.4/esp32/get-started/index.html).
 2. Install Espressif IDF VSCode extension.
 3. In VSCode, open command palette and choose ESP-IDF: Configure ESP-IDF Extension.
-4. Select 'Use Existing Setup'.
+4. Select 'Use Existing Setup' and wait for completion.
 5. Clone this repository into a new folder using `git clone https://github.com/CherryWookie/ESP32-Drone`
+6. Open FlightControl folder in VSCode.
+7. Build and flash to ESP32 board using built-in IDF buttons on bottom toolbar.
+9. MBL Quadcopter Telemetry Console can be opened by running `MBL_QTC` in a python shell.
+10. Python library `tkinter` will need to be installed for the MBL_QTC to run properly.
 
-Smart things etc...
+## Connectivity
+
 
 ## ESC Calibration
 To calibrate our 4 in 1 ESC, we used the following procedure:
