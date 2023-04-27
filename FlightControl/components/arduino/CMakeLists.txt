@@ -81,7 +81,7 @@ set(LIBRARY_SRCS
   libraries/DNSServer/src/DNSServer.cpp
   libraries/EEPROM/src/EEPROM.cpp
   libraries/ESPmDNS/src/ESPmDNS.cpp
-  libraries/Ethernet/src/ETH.cpp
+  # libraries/Ethernet/src/ETH.cpp
   libraries/FFat/src/FFat.cpp
   libraries/FS/src/FS.cpp
   libraries/FS/src/vfs_api.cpp
@@ -99,10 +99,10 @@ set(LIBRARY_SRCS
   libraries/RainMaker/src/RMakerType.cpp
   libraries/RainMaker/src/RMakerQR.cpp
   libraries/RainMaker/src/RMakerUtils.cpp
-  libraries/SD_MMC/src/SD_MMC.cpp
-  libraries/SD/src/SD.cpp
-  libraries/SD/src/sd_diskio.cpp
-  libraries/SD/src/sd_diskio_crc.c
+  # libraries/SD_MMC/src/SD_MMC.cpp
+  # libraries/SD/src/SD.cpp
+  # libraries/SD/src/sd_diskio.cpp
+  # libraries/SD/src/sd_diskio_crc.c
   libraries/SimpleBLE/src/SimpleBLE.cpp
   libraries/SPIFFS/src/SPIFFS.cpp
   libraries/SPI/src/SPI.cpp
@@ -140,6 +140,16 @@ set(LIBRARY_SRCS
   libraries/ESP32Servo/src/analogWrite.cpp
   libraries/MBL_Quadcopter/src/MBL_Quadcopter.cpp
   libraries/MBL_Quadcopter/src/motor.cpp
+  libraries/Adafruit_MPU6050/Adafruit_MPU6050.cpp
+  libraries/Adafruit_BusIO/Adafruit_BusIO_Register.cpp
+  libraries/Adafruit_BusIO/Adafruit_I2CDevice.cpp
+  libraries/Adafruit_BusIO/Adafruit_SPIDevice.cpp
+  libraries/Adafruit_GFX_Library/Adafruit_GFX.cpp
+  libraries/Adafruit_GFX_Library/Adafruit_GrayOLED.cpp
+  libraries/Adafruit_GFX_Library/Adafruit_SPITFT.cpp
+  libraries/Adafruit_SSD1306/Adafruit_SSD1306.cpp
+  libraries/Kalman_Filter_Library/Kalman.cpp
+  libraries/PID/PID_v1.cpp
   )
 
 set(BLE_SRCS
@@ -185,7 +195,7 @@ set(includedirs
   libraries/EEPROM/src
   libraries/ESP32/src
   libraries/ESPmDNS/src
-  libraries/Ethernet/src
+  # libraries/Ethernet/src
   libraries/FFat/src
   libraries/FS/src
   libraries/HTTPClient/src
@@ -196,8 +206,8 @@ set(includedirs
   libraries/NetBIOS/src
   libraries/Preferences/src
   libraries/RainMaker/src
-  libraries/SD_MMC/src
-  libraries/SD/src
+  # libraries/SD_MMC/src
+  # libraries/SD/src
   libraries/SimpleBLE/src
   libraries/SPIFFS/src
   libraries/SPI/src
@@ -211,6 +221,13 @@ set(includedirs
   libraries/Wire/src
   libraries/ESP32Servo/src
   libraries/MBL_Quadcopter/src
+  libraries/Adafruit_MPU6050
+  libraries/Adafruit_BusIO
+  libraries/Adafruit_GFX_Library
+  libraries/Adafruit_Unified_Sensor
+  libraries/Adafruit_SSD1306
+  libraries/Kalman_Filter_Library
+  libraries/PID
   )
 
 set(srcs ${CORE_SRCS} ${LIBRARY_SRCS} ${BLE_SRCS})
