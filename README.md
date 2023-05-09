@@ -3,7 +3,7 @@ Michael Sell & Ben Schaser
 
 ## Table of Contents:
 
-[`Introduction](#introduction)
+[`Introduction`](#introduction)
 
 [`Recources`](#resources)
 
@@ -19,7 +19,6 @@ Michael Sell & Ben Schaser
 
 
 ## Introduction 
-#
 This project is intended to provide a research experience within computer science.
 It will include reading of scientific literature, exploring unsolved problems, and
 making progress on difficult problems within CS.
@@ -35,7 +34,6 @@ remote control
 * Gain experience in writing documentation for the hardware and software
 
 ## Resources
-#
 * [`Bluepad32` Game Controller Library](https://retro.moe/2020/11/24/bluepad32-gamepad-support-for-esp32/)
 * [ESP Proprietary Drones](https://espressif-docs.readthedocs-hosted.com/projects/espressif-esp-drone/en/latest/gettingstarted.html)
 * [ESP with PWM and Servo Control](https://dronebotworkshop.com/esp32-servo/#ESP32_PWM)
@@ -57,7 +55,6 @@ In order to accurately estimate how much thrust our propellers and motors are ca
 
 
 ## Materials
-#
 * [`ESP32-WROOM-32D`](https://www.amazon.com/HiLetgo-ESP-WROOM-32-Development-Microcontroller-Integrated/dp/B0718T232Z/ref=sr_1_3?keywords=esp32+vroom+32D&qid=1676402037&sr=8-3)
     * <a href="https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32d_esp32-wroom-32u_datasheet_en.pdf">View DataSheet</a> 
 
