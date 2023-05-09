@@ -80,8 +80,19 @@ In order to accurately estimate how much thrust our propellers and motors are ca
 ## Calculations
 
 ## Installing Libraries (Ben you can do this thanks bb)
+1. Install ESP-IDF v4.4 and dependencies found [HERE](https://docs.espressif.com/projects/esp-idf/en/v4.4.4/esp32/get-started/index.html).
+2. Install Espressif IDF VSCode extension.
+3. In VSCode, open command palette and choose ESP-IDF: Configure ESP-IDF Extension.
+4. Select 'Use Existing Setup' and wait for completion.
+5. Clone this repository into a new folder using `git clone https://github.com/CherryWookie/ESP32-Drone`
+6. Open FlightControl folder in VSCode.
+7. Build and flash to ESP32 board using built-in IDF buttons on bottom toolbar.
+9. MBL Quadcopter Telemetry Console can be opened by running `MBL_QTC` in a python shell.
+10. Python library `tkinter` will need to be installed for the MBL_QTC to run properly.
 
-Smart things etc...
+## Connectivity
+The FlightControl project is built on Ricardo Quesada's Bluepad32 library which enables us to connect the ESP32 to many different kinds of game controllers in order to control the drone. WiFi connectivity is also established to provide interaction and manipulation of PID constants as well as observation of telemetry data through the MBL Quadcopter Telemetry Console, found in the PythonScripts folder. The ESP32 board acts as a UDP server, so the computer that runs the telemetry console will need to connect to the ESP32 network, labeled as `esp32drone`, in order to send and receive data.
+
 
 ## ESC Calibration
 To calibrate our 4 in 1 ESC, we used the following procedure:
@@ -95,7 +106,7 @@ To calibrate our 4 in 1 ESC, we used the following procedure:
 3. While the ESC is still plugged in, send 1000 PWM (Min throttle). Another different series of beeps should follow.
 4. Unplug battery from ESC. Calibration should be complete.
 
-NOTE: After calibration is completed successfully, the power up should result in only one syncronized 3 beep series instead of a series of different beeps. The different beep patterns can be deciphered in your specific ESC manual; however, for our purposes, we used a third party ESC to decipher our beeps and found them to be quite similar.
+NOTE: After calibration is completed successfully, the power up should result in only one synchronized 3 beep series instead of a series of different beeps. The different beep patterns can be deciphered in your specific ESC manual; however, for our purposes, we used a third party ESC to decipher our beeps and found them to be quite similar.
 
 ```C++
 ESC VScode code
