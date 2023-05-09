@@ -98,7 +98,7 @@ To calibrate our 4 in 1 ESC, we used the following procedure:
 3. While the ESC is still plugged in, send 1000 PWM (Min throttle). Another different series of beeps should follow.
 4. Unplug battery from ESC. Calibration should be complete.
 
-NOTE: After calibration is completed successfully, the power up should result in only one sycronized 3 beep series instead of a series of different beeps. The different beep patterns can be deciphered in your specific ESC manual; however, for our purposes, we used a third party ESC to decipher our beeps and found them to be quite similar.
+NOTE: After calibration is completed successfully, the power up should result in only one syncronized 3 beep series instead of a series of different beeps. The different beep patterns can be deciphered in your specific ESC manual; however, for our purposes, we used a third party ESC to decipher our beeps and found them to be quite similar.
 
 ```C++
 ESC VScode code
@@ -107,7 +107,7 @@ ESC VScode code
 <details>
 <summary>Failed Attempts</summary>
 <br>
-Using the [ESC-Calibration.io](https://github.com/lobodol/ESC-calibration) from lobodo we were able to calibrate the esc by finding max and min throttle and then running the test function that starts at minimum throttle and goes to max. We ended up using an Arduino UNO to perform the calibration as the library wasn't working with the ESP32 and kept giving an error of 'Timed out waiting for packet header'. We tried it in arduino IDE along with VSCode and none worked with the ESP32. We anticipate that the library wasn't friendly with the model of ESP32? Not sure
+Using the [ESC-Calibration.io](https://github.com/lobodol/ESC-calibration) from Lobodo we were able to calibrate the esc by finding max and min throttle and then running the test function that starts at minimum throttle and goes to max. We ended up using an Arduino UNO to perform the calibration as the library wasn't working with the ESP32 and kept giving an error of 'Timed out waiting for packet header'. We tried it in Arduino IDE along with VSCode and none worked with the ESP32. We anticipate that the library wasn't friendly with the model of ESP32? Not sure
 
 As we were testing the motors with the Arduino, we were able to calibrate them individually without a problem; however, when we started to test all four of them at once, at least one motor remained motionless. To remedy this, we switched back over to the ESP32 board and used the following code to test our motors with through VScode and all four worked simultaneously without a problem
 
@@ -117,7 +117,7 @@ As we were testing the motors with the Arduino, we were able to calibrate them i
 
 ## Construction
 ### `Frame/General`
-For the frame construction, we followed the inluded instructions. The ESC was simply put on with the included screws, shock absorbers, and nuts. 
+For the frame construction, we followed the included instructions. The ESC was simply put on with the included screws, shock absorbers, and nuts. 
 
 ### Soldering/ESC
 Soldering the wires onto the ESC was unnecessarily difficult. What ended up working the best was to hold the iron at an angle so that as much of the iron as possible was in contact with the ESC metal contacts. Adding solder to the contacts prior to placing the wire worked well also. Holding the wire down with the iron while resting it in position on top of the contacts and adding solder eventually was the best method. Remember to be aware of any stray solder connecting any of the chips on the ESC.
@@ -147,9 +147,9 @@ Important: In order for the WIFI systems onboard the ESP32 to work simultaneousl
 
 ## PID
 
-For the PID integration, we initially came up with a system to average the different telemetry conditions in order to send our motos cohesive and accurate values. This involved having a motor PWM value for each individual motor for `Pitch` as well as `Roll`. From this, would have 2 PWM values for each motor. Our solution to end up with one single PWM value per motor was to average these values together. *(e.g. (M1roll + M1pitch)/2 etc...)* 
+For the PID integration, we initially came up with a system to average the different telemetry conditions in order to send our motors cohesive and accurate values. This involved having a motor PWM value for each individual motor for `Pitch` as well as `Roll`. From this, would have 2 PWM values for each motor. Our solution to end up with one single PWM value per motor was to average these values together. *(e.g. (M1roll + M1pitch)/2 etc...)* 
 
-With these values, we could utilize our accelerometer/gyroscope data and send these values accordingly to our motors in hopes to self stabalize.
+With these values, we could utilize our accelerometer/gyroscope data and send these values accordingly to our motors in hopes to self stabilize.
 
 ```C++
 PID CODE
